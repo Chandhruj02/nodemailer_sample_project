@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div id="app" class="bg-white p-6 rounded shadow-md w-96">
+    <div id="step1" class="step">
+      <h2 class="text-xl font-bold mb-4">Email Verification</h2>
+      <input
+        id="name"
+        type="text"
+        placeholder="Enter your name"
+        class="border border-gray-300 rounded w-full p-2 mb-4"
+      />
+      <input
+        id="email"
+        type="email"
+        placeholder="Enter your email"
+        class="border border-gray-300 rounded w-full p-2 mb-4"
+      />
+      <button
+        onclick="sendEmail()"
+        class="bg-blue-500 text-white rounded px-4 py-2 w-full hover:bg-blue-600"
+      >
+        Send Verification Code
+      </button>
+      <p id="error1" class="text-red-500 mt-2"></p>
+    </div>
+
+    <div id="step2" class="step hidden">
+      <h2 class="text-xl font-bold mb-4">Enter Verification Code</h2>
+      <input
+        id="verificationCode"
+        type="text"
+        placeholder="Enter the code sent to your email"
+        class="border border-gray-300 rounded w-full p-2 mb-4"
+      />
+      <button
+        onclick="verifyCode()"
+        class="bg-blue-500 text-white rounded px-4 py-2 w-full hover:bg-blue-600"
+      >
+        Verify Code
+      </button>
+      <p id="error2" class="text-red-500 mt-2"></p>
+    </div>
+  </div>
+
+  <script>
+    let verificationCode = "";
+
+    function sendEmail() {
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const error1 = document.getElementById("error1");
+
+      if (!name || !email) {
+        error1.textContent = "Please fill in all fields.";
+        return;
+      }
+
+      axios.post("http://localhost:5000/api/send-email", { name, email })
+        .then(response => {
+          if (response.data.success) {
+            verificationCode = response.data.code;
+            document.getElementById("step1").classList.add("hidden");
+            document.getElementById("step2").classList.remove("hidden");
+          } else {
+            error1.textContent = "Failed to send email. Please try again.";
+          }
+        })
+        .catch(() => {
+          error1.textContent = "An error occurred while sending the email.";
+        });
+    }
+
+    function verifyCode() {
+      const userCode = document.getElementById("verificationCode").value;
+      const error2 = document.getElementById("error2");
+
+      if (userCode === verificationCode) {
+        window.location.href = "/home";
+      } else {
+        error2.textContent = "Incorrect verification code. Please try again.";
+      }
+    }
+  </script>
+</body>
+</html>
